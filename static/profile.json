@@ -1,0 +1,694 @@
+{
+ "_catatan": "Sumber: portofolio https://portofolio-olive-two-45.vercel.app/ (assets/data.js). Edit file ini untuk memperbarui tab Profil; daftar kosong disembunyikan otomatis.",
+ "name": "I Gusti Ngurah Sentana Putra",
+ "short": "Ngurah Sentana",
+ "initials": "NS",
+ "role": "Data Scientist & Researcher",
+ "location": "Bali, Indonesia",
+ "portrait": "https://portofolio-olive-two-45.vercel.app/assets/images/portrait.webp",
+ "portfolio": "https://portofolio-olive-two-45.vercel.app/",
+ "about": [
+  "Saya seorang data scientist dan peneliti yang berbasis di Bali. Saya bekerja sebagai peneliti di IPB University dan freelance data scientist, setelah sebelumnya memimpin tim analis di Lumbung Group.",
+  "Latar belakang saya di Matematika dan Statistika. Riset saya berfokus pada machine learning, ensemble learning, optimisasi metaheuristik, dan analisis data berdimensi tinggi seperti spektroskopi FTIR."
+ ],
+ "facts": [
+  {
+   "label": "Magister",
+   "value": "S2 Statistika & Sains Data · IPB University"
+  },
+  {
+   "label": "Sarjana",
+   "value": "S1 Matematika · Universitas Udayana"
+  },
+  {
+   "label": "Pengalaman",
+   "value": "6+ tahun di data & riset"
+  },
+  {
+   "label": "Klien",
+   "value": "200+"
+  }
+ ],
+ "experience": [
+  {
+   "title": "Researcher",
+   "org": "IPB University",
+   "period": "2024 – sekarang",
+   "desc": [
+    "Menerapkan statistika, sains data, dan machine learning pada riset terapan",
+    "Menerbitkan temuan di jurnal terindeks Sinta dan jurnal internasional"
+   ]
+  },
+  {
+   "title": "Research Assistant",
+   "org": "IPB University & Universitas Terbuka",
+   "period": "2025 – sekarang",
+   "desc": [
+    "Mendukung riset lintas institusi: pengolahan data, pemodelan statistik, penyusunan naskah",
+    "Pengembangan metodologi penelitian"
+   ]
+  },
+  {
+   "title": "Freelance Data Scientist",
+   "org": "Independen",
+   "period": "Jan 2023 – sekarang",
+   "desc": [
+    "Solusi data end-to-end untuk klien lintas industri",
+    "Dashboard interaktif, analisis teks Platform X, klasterisasi ketahanan pangan, klasifikasi citra, analisis portofolio saham"
+   ]
+  },
+  {
+   "title": "Business Development Specialist",
+   "org": "Jangkar Digital",
+   "period": "Jan 2026 – Jun 2026",
+   "desc": [
+    "Membantu klien merumuskan kebutuhan platform digital serta menyusun proposal dan solusi teknis",
+    "Pendekatan konsultatif menaikkan konversi klien rata-rata 20%"
+   ]
+  },
+  {
+   "title": "Agen Pojok Statistik",
+   "org": "Badan Pusat Statistik (BPS)",
+   "period": "Jan 2025 – Jan 2026",
+   "desc": [
+    "Duta literasi statistik untuk 100+ anggota masyarakat",
+    "Membantu publik mengakses dan memahami statistik resmi BPS"
+   ]
+  },
+  {
+   "title": "Lead Data Analyst",
+   "org": "Lumbung Group",
+   "period": "Apr 2024 – Jan 2026",
+   "desc": [
+    "Memimpin 6 analis dan strategi data lintas divisi",
+    "Kerangka KPI untuk 6 manajer dan 14 supervisor",
+    "Otomasi pelaporan dengan Google Apps Script (kerja manual turun 70%)",
+    "Migrasi database Microsoft Access ke Metabase"
+   ]
+  },
+  {
+   "title": "Data Analyst",
+   "org": "PT Kembar Putra Makmur / Lumbung Group",
+   "period": "Jan 2023 – Apr 2024",
+   "desc": [
+    "Sistem rute kunjungan sales (12–15 → 20–25 outlet per sales per hari)",
+    "Pelaporan otomatis, analisis insentif",
+    "ETL 1.000+ invoice per hari ke sistem mitra"
+   ]
+  },
+  {
+   "title": "Data Analyst",
+   "org": "PT Arizona Karya Mitra",
+   "period": "Jan 2023 – Apr 2024",
+   "desc": [
+    "Analisis penjualan dan analisis pasar"
+   ]
+  },
+  {
+   "title": "Student Intern, Data & Business Analytics",
+   "org": "Ruangguru",
+   "period": "Feb 2022 – Jul 2022",
+   "desc": [
+    "Dashboard produk interaktif berbasis KPI",
+    "Segmentasi produk dengan Naive Bayes, Regresi Logistik, KNN"
+   ]
+  },
+  {
+   "title": "Copywriting Intern",
+   "org": "Rampung Analytic",
+   "period": "Jan 2022 – Feb 2022",
+   "desc": [
+    "Menulis konten web dan konten online"
+   ]
+  },
+  {
+   "title": "Design Staff (Freelance, Part-time)",
+   "org": "myphotobookid",
+   "period": "Agu 2019 – Agu 2020",
+   "desc": [
+    "Mendesain photobook sesuai permintaan klien"
+   ]
+  }
+ ],
+ "education": [
+  {
+   "degree": "S2 Statistika dan Sains Data",
+   "school": "IPB University",
+   "period": "Agu 2024 – Jun 2026",
+   "note": "Statistical Data Analysis, Data Science"
+  },
+  {
+   "degree": "S1 Matematika",
+   "school": "Universitas Udayana",
+   "period": "Agu 2019 – Feb 2023",
+   "note": "R (Programming Language), Communication"
+  },
+  {
+   "degree": "Sekolah Menengah Atas",
+   "school": "SMA Negeri 1 Sidemen",
+   "period": "Agu 2016 – Agu 2019",
+   "note": ""
+  }
+ ],
+ "skills": [
+  {
+   "group": "Statistika",
+   "items": [
+    {
+     "name": "Statistical Analysis",
+     "pct": 92
+    },
+    {
+     "name": "Regression Models",
+     "pct": 88
+    },
+    {
+     "name": "SEM/PLS & Panel Econometrics",
+     "pct": 80
+    },
+    {
+     "name": "Time Series & Simulation",
+     "pct": 78
+    }
+   ]
+  },
+  {
+   "group": "Data Science",
+   "items": [
+    {
+     "name": "Machine Learning",
+     "pct": 90
+    },
+    {
+     "name": "Ensemble Learning",
+     "pct": 90
+    },
+    {
+     "name": "Data Visualization",
+     "pct": 95
+    },
+    {
+     "name": "NLP & Sentiment Analysis",
+     "pct": 80
+    },
+    {
+     "name": "Explainable AI (XAI)",
+     "pct": 72
+    }
+   ]
+  },
+  {
+   "group": "Pemrograman & Data",
+   "items": [
+    {
+     "name": "Python",
+     "pct": 90
+    },
+    {
+     "name": "R",
+     "pct": 90
+    },
+    {
+     "name": "SQL",
+     "pct": 88
+    },
+    {
+     "name": "ETL & Otomasi (Apps Script)",
+     "pct": 85
+    }
+   ]
+  }
+ ],
+ "publications": [
+  {
+   "title": "Spatio-temporal modelling of provincial Human Development Index in Indonesia: a comparison of six forecasting approaches",
+   "venue": "Preprint",
+   "year": "2026",
+   "authors": "I Gusti Ngurah Sentana Putra, Muh Akbar Idris",
+   "badge": "",
+   "url": ""
+  },
+  {
+   "title": "Ethnobotanical risk assessment of visually similar medicinal plants: a machine learning approach to identifying species prone to misidentification in traditional medicine",
+   "venue": "Ethnobotany Research and Applications",
+   "year": "2026",
+   "authors": "I Gusti Ngurah Sentana Putra, Muhammad Syafiq, Utami Dyah Syafitri",
+   "badge": "Q1",
+   "url": ""
+  },
+  {
+   "title": "Performance Comparison of Hybrid IndoBERT-Self-Paced Ensemble and IndoBERT-RUSBoost for Imbalanced Text Classification (Case Study: Insecurity Detection on Social Media X)",
+   "venue": "International Journal of Advances in Data and Information Systems",
+   "year": "2026",
+   "authors": "Emeylia Safitri, I Gusti Ngurah Sentana Putra, Nuramaliyah, …, Ria Faulina",
+   "badge": "Sinta 2",
+   "url": ""
+  },
+  {
+   "title": "Cross-cultural ethnobotanical knowledge of Sandoricum koetjape (Burm.f.) Merr. supported by multi-target ethnopharmacological evidence",
+   "venue": "Ethnobotany Research and Applications",
+   "year": "2026",
+   "authors": "Nur Anisa, Asril Burhan, Hersan Bayu, …, Berry Juliandi",
+   "badge": "Q1",
+   "url": ""
+  },
+  {
+   "title": "Modeling Climate Change in the ASEAN Region Using CO₂ Trade Network-Based Spatial-Temporal Graph Neural Network (ST-GNN) and Impact Analysis on Indonesia",
+   "venue": "Indonesian Journal of Environment and Disaster",
+   "year": "2026",
+   "authors": "I Gusti Ngurah Sentana Putra",
+   "badge": "",
+   "url": ""
+  },
+  {
+   "title": "Evaluation of Tree-Based Models for Predicting Social Assistance Recipient Status Based on National Socio-Economic Survey (SUSENAS) 2024",
+   "venue": "Journal of Mathematics Computations and Statistics",
+   "year": "2026",
+   "authors": "Yani Prihantini Hiola, Zulhijrah, I Gusti Ngurah Sentana Putra, …, Gerry Alfa Dito",
+   "badge": "Sinta 3",
+   "url": ""
+  },
+  {
+   "title": "Which Provinces Fall Off the Radar? Mapping Educational Inequality with Machine Learning Anomaly Detection",
+   "venue": "Artikel dalam persiapan",
+   "year": "2026",
+   "authors": "",
+   "badge": "",
+   "url": "https://lnkd.in/gUzprqek"
+  },
+  {
+   "title": "Modified Cuckoo Search Algorithm for Optimizing Hyperparameters in Bagging and Boosting Models for Identification and Authentication of Strobilanthes crispa from Piper aduncum",
+   "venue": "Preprint",
+   "year": "2026",
+   "authors": "I Gusti Ngurah Sentana Putra, Ririn Ristovani, Ade Heri Mulyati, …, Utami Syafitri",
+   "badge": "",
+   "url": ""
+  },
+  {
+   "title": "Classification of Cardiovascular and Chronic Respiratory Diseases Utilizing Ensemble Models with Data Exploration Techniques",
+   "venue": "JIPI (Jurnal Ilmiah Penelitian dan Pembelajaran Informatika)",
+   "year": "2025",
+   "authors": "I Gusti Ngurah Sentana Putra, Amri Najih, Unique Desyrre A Resiloy, …, Anwar Fitrianto",
+   "badge": "Sinta 3",
+   "url": ""
+  },
+  {
+   "title": "Evaluating FastText and GloVe Embeddings for Sentiment Analysis of AI-Generated Ghibli-Style Images",
+   "venue": "Journal of Applied Informatics and Computing",
+   "year": "2025",
+   "authors": "I Gusti Ngurah Sentana Putra, Muhammad Yusran, Jefita Resti Sari, …, Gerry Alfa Dito",
+   "badge": "Sinta 3",
+   "url": "https://doi.org/10.30871/jaic.v9i5.10600"
+  },
+  {
+   "title": "Performance Comparison of Random Forest and XGBoost Optimized with Cuckoo Search Algorithm for Coconut Milk Adulteration Detection Using FTIR Spectroscopy",
+   "venue": "Journal of Mathematics Computations and Statistics",
+   "year": "2025",
+   "authors": "I Gusti Ngurah Sentana Putra, Kusman Sadik, Agus M Soleh, Cici Suhaeni",
+   "badge": "Sinta 3",
+   "url": ""
+  },
+  {
+   "title": "Detection of Adulteration in Coconut Milk Using Cuckoo Search-Optimized XGBoost on High-Dimensional FTIR Spectral Data",
+   "venue": "JIPI (Jurnal Ilmiah Penelitian dan Pembelajaran Informatika)",
+   "year": "2025",
+   "authors": "I Gusti Ngurah Sentana Putra, Kusman Sadik, Agus M Soleh, Cici Suhaeni",
+   "badge": "Sinta 3",
+   "url": "https://doi.org/10.29100/jipi.v10i3.8376"
+  },
+  {
+   "title": "Evaluation of Fast Food Promotion Effectiveness Using a Hybrid Approach of Robust Non-Parametric Methods and Monte Carlo Simulation Based on Market Size Segmentation",
+   "venue": "Jurnal Akuntansi Ekonomi dan Manajemen Bisnis",
+   "year": "2025",
+   "authors": "I Gusti Ngurah Sentana Putra",
+   "badge": "",
+   "url": "https://doi.org/10.30871/jaemb.v13i1.9313"
+  },
+  {
+   "title": "Integrasi RFM, K-Means, dan XGBoost untuk Optimalisasi Retensi Pelanggan pada Online Retail",
+   "venue": "KONSTELASI: Konvergensi Teknologi dan Sistem Informasi",
+   "year": "2025",
+   "authors": "I Gusti Ngurah Sentana Putra",
+   "badge": "",
+   "url": "https://doi.org/10.24002/konstelasi.v5i1.11409"
+  },
+  {
+   "title": "Palm Oil Adulteration Detection Using Model Averaging of Machine Learning Classifiers on Simulated Chemical Data",
+   "venue": "IJOP",
+   "year": "2025",
+   "authors": "",
+   "badge": "Best Paper",
+   "url": ""
+  },
+  {
+   "title": "Klasifikasi Tingkat Kesejahteraan Keluarga di Kecamatan Sidemen Menggunakan Bootstrap Aggregating (Bagging) Regresi Logistik Ordinal",
+   "venue": "E-Jurnal Matematika",
+   "year": "2023",
+   "authors": "I Gusti Ngurah Sentana Putra, Made Susilawati, I Putu Winada Gautama",
+   "badge": "",
+   "url": ""
+  }
+ ],
+ "projects": [
+  {
+   "title": "SpaceIQ — Manajemen Ruang Ritel & Planogram",
+   "year": "2026",
+   "desc": "Suite manajemen ruang ritel dan planogram: produktivitas ruang, kepatuhan tata letak, dan kesiapan pembukaan toko.",
+   "tags": [
+    "Google Apps Script",
+    "Retail",
+    "Planogram"
+   ],
+   "url": "https://script.google.com/macros/s/AKfycbxkSsbv3SbjOjrIhLII19K7Px0tipt4e0J1BD5IvGdwQWegv6koS4winaE_HsjcruW2/exec"
+  },
+  {
+   "title": "KELAM Store Manager",
+   "year": "2026",
+   "desc": "Sistem manajemen toko fashion ritel di atas 50 sheet Google Sheets: penjualan, inventaris, staf, pelanggan, audit.",
+   "tags": [
+    "Google Apps Script",
+    "Retail Ops",
+    "Dashboard"
+   ],
+   "url": "https://script.google.com/macros/s/AKfycbxuth8v3cuSOaH0HNzW6LWePyY-uSVK1trZBRvA5rGY6dPQ0n4GlEfDATGZbFgyiaY/exec"
+  },
+  {
+   "title": "WMS Operations Suite",
+   "year": "2026",
+   "desc": "Sistem manajemen gudang terintegrasi dengan anomaly detection, forecasting, dan audit trail.",
+   "tags": [
+    "Google Apps Script",
+    "Warehouse",
+    "Forecasting"
+   ],
+   "url": "https://script.google.com/macros/s/AKfycbwgoNWFxNGUkrv12nbgD8jygft2pIJ8yb-x9-itgsYstjJD5Ykot9Z-a2OHwPw20WUJ8w/exec"
+  },
+  {
+   "title": "Automasi.id — BD & Revenue Management",
+   "year": "2026",
+   "desc": "Pipeline CRM, proposal PDF, dan simulasi proyeksi pendapatan untuk perusahaan jasa digital.",
+   "tags": [
+    "Google Apps Script",
+    "CRM",
+    "Revenue"
+   ],
+   "url": "https://script.google.com/macros/s/AKfycbwEhcqPTJfVuOkiWXMRIOxlI89LqKiRWemzNidMRKk-sgJuJQFQM5rIdaAbaXVRcacg/exec"
+  },
+  {
+   "title": "Selaras HR",
+   "year": "2026",
+   "desc": "Sistem SDM: rekrutmen dengan auto-scoring, draft kontrak, kinerja bulanan, dan eskalasi disipliner.",
+   "tags": [
+    "Google Apps Script",
+    "HR",
+    "Bilingual"
+   ],
+   "url": "https://script.google.com/macros/s/AKfycby2LDaOQSPq5d-EbZ4OHfbafKyGyEQH84CCXLfq3zsoEZBwm6LUR5M5VI6xcf6iG5lg/exec"
+  },
+  {
+   "title": "Revenue Dashboard — Hotel",
+   "year": "2026",
+   "desc": "Revenue management hotel: okupansi, ADR, RevPAR, akurasi forecast (MAPE), pickup.",
+   "tags": [
+    "Google Apps Script",
+    "Hospitality",
+    "Forecast"
+   ],
+   "url": "https://script.google.com/macros/s/AKfycbwJpOpts3dG5gY2Tv8S_qWZQNuJIvQErguwohYt-RcTUXE71onTA0ipp6dsGHYDuNCi/exec"
+  },
+  {
+   "title": "Store Cannibalization Analysis",
+   "year": "2026",
+   "desc": "Event study kausal 30 gerai F&B di Bali: rata-rata pendapatan gerai tetangga turun 21,3% setelah pembukaan.",
+   "tags": [
+    "Python",
+    "Event Study",
+    "Looker Studio"
+   ],
+   "url": "https://lnkd.in/gne72ZnS"
+  },
+  {
+   "title": "Loyalty Tier & Promo Evaluation",
+   "year": "2026",
+   "desc": "Segmentasi ~2.000 outlet per bulan dan evaluasi promo dengan Difference in Differences.",
+   "tags": [
+    "Apps Script",
+    "Chart.js",
+    "DiD"
+   ],
+   "url": "https://lnkd.in/gYic3y9Q"
+  },
+  {
+   "title": "KPI & Sales Incentive System",
+   "year": "2026",
+   "desc": "KPI enam komponen dan insentif otomatis untuk distributor FMCG dengan 3 depo dan 64 staf.",
+   "tags": [
+    "Apps Script",
+    "KPI",
+    "HR Analytics"
+   ],
+   "url": "https://lnkd.in/gM5ciDxa"
+  },
+  {
+   "title": "WC 2026 Analytics",
+   "year": "2026",
+   "desc": "Dashboard FIFA World Cup 2026: 48 tim, 104 laga, 1.248 pemain, hingga prediksi pertandingan.",
+   "tags": [
+    "Shiny",
+    "Sports Analytics"
+   ],
+   "url": "https://ngurahsentana24.shinyapps.io/wc_dashboard/"
+  },
+  {
+   "title": "Explore Pariwisata Jawa Barat",
+   "year": "2025",
+   "desc": "Platform pariwisata dengan rekomendasi destinasi untuk wisatawan dan pemerintah daerah.",
+   "tags": [
+    "Shiny",
+    "Tourism",
+    "Recommendation"
+   ],
+   "url": "https://ngurahsentana24.shinyapps.io/Wisatajawabarat/"
+  },
+  {
+   "title": "Trash Analytics",
+   "year": "2025",
+   "desc": "Pemantauan dan analisis pengelolaan sampah Indonesia menuju target 2029.",
+   "tags": [
+    "Shiny",
+    "Waste Management",
+    "Public Data"
+   ],
+   "url": "https://ngurahsentana24.shinyapps.io/TrashAnalytics/"
+  },
+  {
+   "title": "Multimodal FTIR and Image-Based Banana Ripeness Classification",
+   "year": "2026",
+   "desc": "Klasifikasi kematangan pisang dengan menggabungkan spektrum FTIR dan citra (sedang berjalan).",
+   "tags": [
+    "Python",
+    "FTIR",
+    "Computer Vision"
+   ],
+   "url": ""
+  },
+  {
+   "title": "VaR & CVaR in ESG Stocks, LQ45, and Combined Portfolios",
+   "year": "2025",
+   "desc": "Perbandingan VaR dan CVaR sebelum, saat, dan sesudah pandemi.",
+   "tags": [
+    "R",
+    "Quant Finance"
+   ],
+   "url": ""
+  }
+ ],
+ "certifications": [
+  {
+   "name": "Google Data Analytics",
+   "issuer": "Google",
+   "year": "2026"
+  },
+  {
+   "name": "ASEAN Data Science Explorers 2024 Enablement Session",
+   "issuer": "ASEAN Foundation",
+   "year": "2024"
+  },
+  {
+   "name": "IBM Certified Machine Learning",
+   "issuer": "IBM",
+   "year": "2024"
+  },
+  {
+   "name": "IBM Certified Data Science",
+   "issuer": "IBM",
+   "year": "2024"
+  },
+  {
+   "name": "Data Analytics",
+   "issuer": "RevoU",
+   "year": "2024"
+  },
+  {
+   "name": "Relawan Superteam Batch 3",
+   "issuer": "Social Project Bali",
+   "year": "2023"
+  },
+  {
+   "name": "Data Wrangling Python",
+   "issuer": "DQLab",
+   "year": "2022"
+  },
+  {
+   "name": "Fundamental SQL using SELECT Statement",
+   "issuer": "DQLab",
+   "year": "2022"
+  },
+  {
+   "name": "R Fundamental for Data Science",
+   "issuer": "DQLab",
+   "year": "2022"
+  },
+  {
+   "name": "Introduction to Data Science with R",
+   "issuer": "DQLab",
+   "year": "2021"
+  },
+  {
+   "name": "Introduction to Data Science with Python",
+   "issuer": "DQLab",
+   "year": "2021"
+  }
+ ],
+ "awards": [
+  {
+   "name": "Best Paper",
+   "issuer": "IJOP",
+   "year": "2025"
+  },
+  {
+   "name": "Best Presenter",
+   "issuer": "Konstelasi",
+   "year": "2025"
+  },
+  {
+   "name": "Presenter ICDSOS",
+   "issuer": "STIS",
+   "year": "2025"
+  },
+  {
+   "name": "2nd Millennial Essay Competition",
+   "issuer": "FKIP Universitas Lampung",
+   "year": "2022"
+  }
+ ],
+ "organizations": [
+  {
+   "org": "Himpunan Profesi Pascasarjana Statistika IPB University",
+   "role": "Ketua",
+   "year": "2025"
+  },
+  {
+   "org": "Keluarga LPDP IPB 12.0",
+   "role": "Kepala Divisi Sosial Masyarakat",
+   "year": "2025"
+  },
+  {
+   "org": "DPM PM Universitas Udayana",
+   "role": "Ketua DPM",
+   "year": "2022"
+  },
+  {
+   "org": "DPM PM Universitas Udayana",
+   "role": "Anggota Komisi Aspirasi Advokasi",
+   "year": "2021"
+  },
+  {
+   "org": "UKM Pramuka Racana Udayana Mahendradatta",
+   "role": "Ketua Dewan Racana",
+   "year": "2021"
+  },
+  {
+   "org": "UKM Udayana Focus",
+   "role": "Wakil Ketua",
+   "year": "2020"
+  }
+ ],
+ "volunteering": [
+  {
+   "org": "Social Project Bali",
+   "role": "Relawan · Lingkungan",
+   "year": "2023 – sekarang"
+  },
+  {
+   "org": "Kejar Mimpi Bali",
+   "role": "Program Officer · Pendidikan",
+   "year": "2020 – 2021"
+  }
+ ],
+ "speaking": [
+  "Machine Learning untuk Deteksi Pemalsuan Pangan dengan Spektroskopi FTIR",
+  "Dashboard dan Otomasi Operasional dengan Google Sheets dan Apps Script",
+  "Inferensi Kausal untuk Keputusan Bisnis",
+  "Explainable AI dan Deteksi Anomali untuk Data Kebijakan",
+  "Literasi Data dan Statistik untuk Mahasiswa dan Masyarakat"
+ ],
+ "contacts": [
+  {
+   "label": "Email",
+   "value": "sentanaputra24@gmail.com",
+   "url": "mailto:sentanaputra24@gmail.com"
+  },
+  {
+   "label": "WhatsApp",
+   "value": "+62 877-6143-5287",
+   "url": "https://wa.me/6287761435287"
+  },
+  {
+   "label": "GitHub",
+   "value": "ngurahsentana24",
+   "url": "https://github.com/ngurahsentana24"
+  },
+  {
+   "label": "LinkedIn",
+   "value": "igustingurahsentanaputra",
+   "url": "https://www.linkedin.com/in/igustingurahsentanaputra"
+  },
+  {
+   "label": "Google Scholar",
+   "value": "Profil Scholar",
+   "url": "https://scholar.google.com/citations?user=ozuL4jsAAAAJ"
+  },
+  {
+   "label": "ResearchGate",
+   "value": "I-Gusti-Ngurah-Sentana-Putra",
+   "url": "https://www.researchgate.net/profile/I-Gusti-Ngurah-Sentana-Putra"
+  },
+  {
+   "label": "RPubs",
+   "value": "ngurahsentana",
+   "url": "https://rpubs.com/ngurahsentana"
+  },
+  {
+   "label": "Linktree",
+   "value": "ngurahsentana",
+   "url": "https://linktr.ee/ngurahsentana"
+  },
+  {
+   "label": "Portofolio",
+   "value": "portofolio-olive-two-45.vercel.app",
+   "url": "https://portofolio-olive-two-45.vercel.app/"
+  }
+ ],
+ "interests": [
+  "Machine Learning",
+  "Statistical Modeling",
+  "High Dimensional Data",
+  "Ensemble Learning",
+  "NLP",
+  "Explainable AI (XAI)",
+  "Optimization & Metaheuristics",
+  "Big Data Analytics",
+  "Database & Data Management"
+ ]
+}
