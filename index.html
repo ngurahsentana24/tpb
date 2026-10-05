@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TBP Lab — CEEMDAN-LSTM LPS</title>
+<meta name="description" content="Dashboard riset CEEMDAN-LSTM Deposito 1M dan efektivitas Tingkat Bunga Penjaminan (TBP) LPS — hasil paper dan training ulang.">
+<link rel="icon" href="{{ url_for('static', filename='img/lps-logo.png') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+<!-- ======================= SIDEBAR ======================= -->
+<aside class="side" id="side">
+  <div class="brand">
+    <div class="brand-logo"><img src="{{ url_for('static', filename='img/lps-logo.png') }}" alt="Logo LPS"></div>
+    <div><b>TBP Lab</b><small>CEEMDAN-LSTM · LPS 2026</small></div>
+  </div>
+  <div class="src">
+    <span class="t">Sumber hasil</span>
+    <div class="seg" id="srcSeg"><button class="on" data-s="paper">Hasil Paper</button><button data-s="run" id="srcRun">Training Ulang</button></div>
+  </div>
+  <div class="nav-label">Analisis</div>
+  <button class="nav active" data-view="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Ringkasan</button>
+  <button class="nav" data-view="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4m0 0-4 4m4-4 4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>Data &amp; Pipeline</button>
+  <button class="nav" data-view="decomp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6c3-3 6 3 9 0s6 3 9 0M3 12c3-2 6 2 9 0s6 2 9 0M3 18h18"/></svg>Dekomposisi</button>
+  <button class="nav" data-view="model"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg>Evaluasi Model</button>
+  <button class="nav" data-view="forecast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></svg>Proyeksi</button>
+  <div class="nav-label">Kebijakan</div>
+  <button class="nav" data-view="effect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="m9 12 2 2 4-4"/></svg>Efektivitas TBP</button>
+  <button class="nav" data-view="sim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h10m4 0h2M4 12h4m4 0h8M4 18h12m4 0h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Simulasi Skenario</button>
+  <button class="nav" data-view="rec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4h6m-7 3h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><path d="M9 13h6m-6 4h4"/></svg>Rekomendasi</button>
+  <div class="nav-label">Penulis</div>
+  <button class="nav" data-view="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>Profil Peneliti</button>
+  <div class="side-foot">
+    <b id="footTitle">Hasil paper</b>
+    <span class="dot"></span><span id="lastRun">–</span><br>
+    <span class="muted" style="color:#9CCAB9" id="lastRunSub">–</span>
+  </div>
+</aside>
+
+<main class="main">
+
+<!-- ======================= TOPBAR ======================= -->
+<div class="top">
+  <button class="btn ghost menu-btn" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
+  <div>
+    <h1 id="pageTitle">Ringkasan</h1>
+    <p id="pageSub">–</p>
+  </div>
+  <div class="spacer"></div>
+  <span class="chip yellow" id="modeChip">● Hasil paper</span>
+  <span class="chip green" id="engineChip">–</span>
+  <a class="btn ghost" id="exportBtn" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4v12m0 0-4-4m4 4 4-4"/><path d="M4 18v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1"/></svg>Excel</a>
+  <button class="btn" onclick="go('data')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Training ulang</button>
+</div>
+<div id="srcNotice"></div>
+
+<!-- ======================= 1. OVERVIEW ======================= -->
+<section class="view active" id="v-overview">
+  <div class="grid g4">
+    <div class="card green kpi">
+      <div class="card-h"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 3 8-8"/></svg></div><span class="lab">Deposito 1M (terakhir)</span></div>
+      <div class="val" id="kDep">–</div><span class="delta warn" id="kDepD">–</span>
+    </div>
+    <div class="card kpi">
+      <div class="card-h"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div><span class="lab">TBP LPS · BI Rate</span></div>
+      <div class="val" id="kTbp">–</div><span class="delta" id="kTbpD">–</span>
+    </div>
+    <div class="card kpi">
+      <div class="card-h"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div><span class="lab">Gap Deposito − TBP</span></div>
+      <div class="val" id="kGap">–</div><span class="delta neg" id="kGapD">–</span>
+    </div>
+    <div class="card yellow kpi">
+      <div class="card-h"><div class="ico" style="background:rgba(13,74,62,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div><span class="lab" style="color:var(--g900)" id="kPbLab">P(breach) akhir horizon</span></div>
+      <div class="val" id="kPb">–</div><span class="delta" style="background:rgba(13,74,62,.12)">TBP ditahan · baseline</span>
+    </div>
+  </div>
+
+  <div class="grid g21 mt">
+    <div class="card">
+      <div class="card-h"><div><h3>Lima suku bunga</h3><div class="sub" id="ovLineSub">BI Rate, LF, DF, TBP LPS, Deposito 1M</div></div>
+        <div class="r"><div class="seg" id="ovSeg"><button class="on" data-r="all">Semua</button><button data-r="36">3 thn</button><button data-r="12">1 thn</button></div></div></div>
+      <div id="ovLineBox"><div class="cv h300"><canvas id="ovLine"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div><h3>Model terbaik</h3><div class="sub" id="ovBestSub">Deposito 1M · rolling-origin</div></div></div>
+      <div id="ovBest"></div>
+      <div class="cv h180 mt"><canvas id="ovRmse"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid g21 mt">
+    <div class="card">
+      <div class="card-h"><div><h3>Gap Deposito 1M − TBP</h3><div class="sub">bp · merah = breach (deposito di atas TBP, simpanan tidak dijamin)</div></div>
+        <div class="r"><span class="chip red" id="ovBreachChip">–</span></div></div>
+      <div id="ovGapBox"><div class="cv h220"><canvas id="ovGap"></canvas></div></div>
+    </div>
+    <div class="card soft">
+      <div class="card-h"><div><h3>Dua mode dashboard</h3><div class="sub">Pilih di sidebar · Sumber hasil</div></div></div>
+      <div class="steps">
+        <div class="step done"><div class="n">1</div><div><b>Hasil Paper</b><small>Angka resmi paper & lampiran: 6 fold rolling-origin 2025Q1–2026Q2, holdout 2026Q3, proyeksi ARIMA-CEEMDAN-LSTM tiga spesifikasi.</small></div></div>
+        <div class="step" id="ovRunStep"><div class="n">2</div><div><b>Training Ulang</b><small id="ovRunTxt">Unggah data harian baru → pipeline yang sama dijalankan di server (versi ringan).</small></div></div>
+      </div>
+      <div class="mt" id="ovMeta"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 2. DATA & PIPELINE ======================= -->
+<section class="view" id="v-data">
+  <div class="grid g12">
+    <div>
+      <div class="card">
+        <div class="card-h"><div><h3>Unggah data baru</h3><div class="sub">Excel/CSV harian · format long (Tanggal, Keterangan, Nilai) atau wide</div></div></div>
+        <label class="drop" id="drop">
+          <input type="file" id="fileIn" accept=".xlsx,.xls,.csv" hidden>
+          <div class="big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 16V4m0 0-4 4m4-4 4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></div>
+          <h4>Tarik file ke sini atau klik</h4>
+          <p class="muted" id="dropSub">LPS.xlsx · maks. 20 MB</p>
+        </label>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <a class="btn ghost sm" href="/api/template">Template CSV</a>
+          <a class="btn ghost sm" href="/api/sample">Contoh data sintetis</a>
+        </div>
+        <div id="fileBox"></div>
+        <div class="mt" id="checks"></div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-h"><div><h3>Konfigurasi training ulang</h3><div class="sub">Default mengikuti paper; dibatasi agar ringan di server</div></div></div>
+        <div class="form-row">
+          <div class="field"><label>Spesifikasi target</label><select id="cfSpec"><option value="level">Level (Deposito 1M)</option><option value="gap">Gap (Deposito − TBP)</option><option value="spread">Spread (Deposito − BI)</option></select></div>
+          <div class="field"><label>Jumlah fold (kuartal)</label><input id="cfFolds" type="number" min="1" max="8" value="6"></div>
+          <div class="field"><label>Jendela dekomposisi (W)</label><input id="cfWin" type="number" min="126" max="504" value="252"></div>
+          <div class="field"><label>Dekomposisi kausal</label><select id="cfDec"><option value="emd">EMD (cepat)</option><option value="ceemdan">CEEMDAN (lambat)</option></select></div>
+          <div class="field"><label>Mesin jaringan</label><select id="cfEng"><option value="auto">Otomatis</option><option value="lstm">LSTM (PyTorch)</option><option value="mlp">MLP (ringan)</option></select></div>
+          <div class="field"><label>Epoch maks.</label><input id="cfEp" type="number" min="5" max="150" value="60"></div>
+          <div class="field"><label>Seed ensemble</label><input id="cfSeeds" type="number" min="1" max="5" value="3"></div>
+          <div class="field"><label>Bootstrap PI (B)</label><input id="cfB" type="number" min="200" max="2000" step="100" value="1000"></div>
+          <div class="field" id="tokField" style="display:none"><label>Token training</label><input id="cfTok" type="password" placeholder="RETRAIN_TOKEN"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center">
+          <button class="btn" id="runBtn" disabled>▶ Jalankan training ulang</button>
+          <label class="switch"><input type="checkbox" id="cfHo" checked><span class="tr"></span>Kuartal terakhir sebagai holdout</label>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-h"><div><h3>Progres pipeline</h3><div class="sub" id="pipeSub">Unggah data untuk memulai</div></div><div class="r"><span class="chip" id="pipePct">0%</span></div></div>
+        <div class="bar"><span id="pipeBar"></span></div>
+        <div class="grid g2 mt">
+          <div class="steps" id="steps"></div>
+          <div><div class="log" id="log"><span class="t">$</span> menunggu perintah…</div></div>
+        </div>
+      </div>
+      <div class="card mt">
+        <div class="card-h"><div><h3>Pratinjau data</h3><div class="sub" id="prevSub">10 baris terakhir (wide, forward-fill kausal)</div></div></div>
+        <div class="tbl-wrap"><table id="prevTbl"><tbody><tr><td class="empty">Belum ada data diunggah.</td></tr></tbody></table></div>
+      </div>
+      <div class="card mt">
+        <div class="card-h"><div><h3>Riwayat training ulang</h3><div class="sub">Run aktif dipakai oleh mode "Training Ulang"</div></div></div>
+        <div id="runsBox"><div class="empty">Belum ada run.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 3. DECOMPOSITION ======================= -->
+<section class="view" id="v-decomp">
+  <div class="grid g4" id="dKpis"></div>
+  <div class="card mt">
+    <div class="card-h"><div><h3>Komponen frekuensi</h3><div class="sub">CEEMDAN deskriptif seluruh deret (bukan input model)</div></div>
+      <div class="r"><div class="seg" id="dSeg"><button class="on" data-s="target">Target</button><button data-s="gap">Gap Dep − TBP</button></div></div></div>
+    <div id="dBody"></div>
+  </div>
+  <div class="card mt">
+    <div class="card-h"><div><h3>Karakteristik IMF dan horizon kebijakan</h3><div class="sub">Periode rata-rata, porsi variansi, korelasi dengan deret asli</div></div></div>
+    <div class="tbl-wrap"><table id="imfTbl"></table></div>
+  </div>
+  <div class="card mt" id="cohCard" style="display:none">
+    <div class="card-h"><div><h3>Koherensi TBP dengan komponen Deposito 1M</h3><div class="sub">Korelasi silang · lag dalam hari kerja</div></div></div>
+    <div class="tbl-wrap"><table id="cohTbl"></table></div>
+  </div>
+</section>
+
+<!-- ======================= 4. MODEL EVALUATION ======================= -->
+<section class="view" id="v-model">
+  <div class="grid g4" id="mKpis"></div>
+  <div class="card mt">
+    <div class="card-h"><div><h3>Akurasi ramalan satu langkah</h3><div class="sub" id="evalSub">Deposito 1M · ★ = RMSE terendah</div></div>
+      <div class="r"><div class="seg" id="mSeg"><button class="on" data-s="cv">Rolling-origin</button><button data-s="ho">Holdout</button></div></div></div>
+    <div class="tbl-wrap"><table id="evalTbl"></table></div>
+  </div>
+  <div class="grid g2 mt">
+    <div class="card">
+      <div class="card-h"><div><h3>RMSE per fold</h3><div class="sub">Kestabilan antar-fold</div></div></div>
+      <div class="cv h260"><canvas id="mFold"></canvas></div>
+    </div>
+    <div class="card" id="mRight"></div>
+  </div>
+  <div class="grid g2 mt">
+    <div class="card">
+      <div class="card-h"><div><h3>Uji Diebold-Mariano (HLN)</h3><div class="sub">DM &lt; 0 = model pertama lebih akurat</div></div></div>
+      <div class="tbl-wrap"><table id="dmTbl"></table></div>
+    </div>
+    <div class="card" id="foldCard">
+      <div class="card-h"><div><h3>Detail per fold</h3><div class="sub">λ koreksi (aturan 1-SE) dan jumlah hari uji</div></div></div>
+      <div class="tbl-wrap"><table id="foldTbl"></table></div>
+    </div>
+  </div>
+  <div class="card mt" id="horCard" style="display:none">
+    <div class="card-h"><div><h3>Implikasi galat terhadap kisi keputusan TBP (25 bp)</h3><div class="sub">RMSE dan lebar interval menurut horizon</div></div></div>
+    <div class="tbl-wrap"><table id="horTbl"></table></div>
+  </div>
+</section>
+
+<!-- ======================= 5. FORECAST ======================= -->
+<section class="view" id="v-forecast">
+  <div class="grid g4" id="fKpis"></div>
+  <div class="card mt">
+    <div class="card-h"><div><h3>Proyeksi harian Deposito 1M</h3><div class="sub">Multi-step rekursif dari origin data terakhir · PI 95% residual bootstrap · TBP ditahan</div></div>
+      <div class="r"><div class="seg" id="fSeg"></div></div></div>
+    <div class="cv h340"><canvas id="fMain"></canvas></div>
+  </div>
+  <div class="grid g21 mt">
+    <div class="card">
+      <div class="card-h"><div><h3>Proyeksi bulanan &amp; P(breach)</h3><div class="sub" id="fTblSub">Rata-rata bulanan · TBP minimum = kelipatan 25 bp agar P(breach) ≤ 10%</div></div></div>
+      <div class="tbl-wrap"><table id="fTbl"></table></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div><h3>P(breach) per bulan</h3><div class="sub">Semua model / spesifikasi</div></div></div>
+      <div class="cv h260"><canvas id="fPb"></canvas></div>
+    </div>
+  </div>
+  <div class="card mt" id="fFigCard" style="display:none"></div>
+</section>
+
+<!-- ======================= 6. EFFECTIVENESS ======================= -->
+<section class="view" id="v-effect">
+  <div class="grid g4" id="eKpis"></div>
+  <div class="card mt">
+    <div class="card-h"><div><h3>Efektivitas TBP per siklus kebijakan BI</h3><div class="sub">Breach = Deposito 1M &gt; TBP · posisi koridor = (TBP − DF)/(LF − DF): 0 = DF, 1 = LF</div></div></div>
+    <div class="tbl-wrap"><table id="effTbl"></table></div>
+  </div>
+  <div class="grid g2 mt">
+    <div class="card" id="eLeft"></div>
+    <div class="card" id="eRight"></div>
+  </div>
+  <div class="card mt">
+    <div class="card-h"><div><h3>Transmisi BI Rate → TBP &amp; Deposito</h3><div class="sub">ARDL/ECM uji bounds PSS (kasus III, 5%) dan NARDL asimetri · data bulanan</div></div></div>
+    <div class="tbl-wrap"><table id="ardlTbl"></table></div>
+    <div class="tbl-wrap mt"><table id="nardlTbl"></table></div>
+  </div>
+  <div class="grid g2 mt">
+    <div class="card">
+      <div class="card-h"><div><h3>Multiplier dinamis BI → Deposito 1M</h3><div class="sub">Respons kumulatif per 1 pp perubahan BI Rate · dipakai simulasi</div></div></div>
+      <div class="cv h260"><canvas id="eMult"></canvas></div>
+    </div>
+    <div class="card" id="eFig2"></div>
+  </div>
+</section>
+
+<!-- ======================= 7. SIMULATION ======================= -->
+<section class="view" id="v-sim">
+  <div class="lsteps">
+    <div class="lstep on"><i>Langkah 1</i><b>Skenario BI Rate</b></div>
+    <div class="lstep on"><i>Langkah 2</i><b>Turunkan TBP, LF, DF</b></div>
+    <div class="lstep on"><i>Langkah 3</i><b>Dampak ke Deposito 1M</b></div>
+    <div class="lstep on"><i>Langkah 4</i><b>Gap per bulan</b></div>
+    <div class="lstep on"><i>Langkah 5</i><b>P(breach) bootstrap</b></div>
+  </div>
+  <div id="simNotice"></div>
+  <div class="grid g12">
+    <div class="card">
+      <div class="card-h"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h10m4 0h2M4 12h4m4 0h8M4 18h12"/></svg></div><div><h3>Parameter skenario</h3><div class="sub">Dihitung di server Flask</div></div></div>
+      <div class="ctrl">
+        <div class="ctrl-h"><span>① Shock BI Rate</span><output id="oShock">0 bp</output></div>
+        <input type="range" id="sShock" min="-100" max="100" step="25" value="0">
+        <div class="ticks"><span>−100</span><span>−50</span><span>0</span><span>+50</span><span>+100</span></div>
+      </div>
+      <label class="switch" style="margin:-4px 0 18px"><input type="checkbox" id="sStoch"><span class="tr"></span>Jalur BI stokastik (CIR)</label>
+      <div class="ctrl">
+        <div class="ctrl-h"><span>② Respons TBP</span></div>
+        <div class="opts" id="tbpOpts" style="grid-template-columns:1fr 1fr 1fr">
+          <button class="opt" data-o="A"><b>A · Spread historis</b><small>BI + spread</small></button>
+          <button class="opt on" data-o="C"><b>C · Ditahan</b><small>konservatif</small></button>
+          <button class="opt" data-o="D"><b>D · Dep + 25 bp</b><small>bulan lalu</small></button>
+        </div>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-h"><span>Penyesuaian TBP tambahan</span><output id="oAdj">+0 bp</output></div>
+        <input type="range" id="sAdj" min="-50" max="150" step="25" value="0">
+        <div class="ticks"><span>−50</span><span>0</span><span>+50</span><span>+100</span><span>+150</span></div>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-h"><span>Penyesuaian berlaku mulai</span><output id="oLag">bulan ke-1</output></div>
+        <input type="range" id="sLag" min="1" max="6" step="1" value="1">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-h"><span>③ Transmisi BI → Deposito</span></div>
+        <div class="seg" id="trSeg" style="width:100%;display:flex"><button class="on" data-t="ardl" style="flex:1">ARDL θ, α</button><button data-t="nardl" style="flex:1">NARDL θ⁺/θ⁻</button></div>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-h"><span>⑤ Ambang P(breach)</span><output id="oTol">10%</output></div>
+        <input type="range" id="sTol" min="5" max="30" step="5" value="10">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-h"><span>Jumlah bootstrap (B)</span><output id="oB">1000</output></div>
+        <input type="range" id="sB" min="200" max="2000" step="200" value="1000">
+      </div>
+      <button class="btn ghost" style="width:100%;justify-content:center" onclick="resetSim()">Reset ke baseline</button>
+    </div>
+
+    <div>
+      <div class="grid g3">
+        <div class="card" style="text-align:center">
+          <div class="lab muted" style="font-size:12.5px;font-weight:600">P(breach) maks · 6 bulan</div>
+          <div class="gauge" id="gauge"><div><span><b id="gVal">–</b><small id="gSub">–</small></span></div></div>
+          <span class="delta" id="gTag">–</span>
+        </div>
+        <div class="card green kpi">
+          <span class="lab">TBP minimum (P ≤ <span id="tolLab">10</span>%)</span>
+          <div class="val" id="sTbpMin">–</div>
+          <span class="muted" id="sTbpMinSub">–</span>
+          <div class="mt"><span class="lab">Penyesuaian dibutuhkan</span><div class="val" style="font-size:24px;color:var(--y500)" id="sAdjNeed">–</div></div>
+        </div>
+        <div class="card kpi">
+          <span class="lab">Gap akhir horizon</span>
+          <div class="val" id="sGapEnd">–</div>
+          <span class="delta" id="sGapTag">–</span>
+          <div class="mt"><span class="lab">TBP skenario · akhir horizon</span><div class="val" style="font-size:24px" id="sTbpEnd">–</div></div>
+        </div>
+      </div>
+      <div class="grid g2 mt">
+        <div class="card">
+          <div class="card-h"><div><h3>Fan chart Deposito vs TBP</h3><div class="sub">5–95% dan 25–75%</div></div></div>
+          <div class="cv h260"><canvas id="sFan"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><h3>P(breach) per bulan</h3><div class="sub">Garis putus = ambang</div></div></div>
+          <div class="cv h260"><canvas id="sPb"></canvas></div>
+        </div>
+      </div>
+      <div class="grid g21 mt">
+        <div class="card">
+          <div class="card-h"><div><h3>Jalur skenario per bulan</h3><div class="sub">Langkah 2–5 · median</div></div></div>
+          <div class="tbl-wrap"><table id="simTbl"></table></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><h3>Heatmap shock × respons TBP</h3><div class="sub">P(breach) maks</div></div></div>
+          <div class="heat" id="heat"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card mt">
+    <div class="card-h"><div><h3>Matriks skenario hasil (P(breach) akhir / maks)</h3><div class="sub" id="mxSub">Baseline CEEMDAN-LSTM · transmisi ARDL</div></div></div>
+    <div class="tbl-wrap"><table id="mxTbl"></table></div>
+  </div>
+</section>
+
+<!-- ======================= 8. RECOMMENDATION ======================= -->
+<section class="view" id="v-rec">
+  <div class="grid g3" id="rKpis"></div>
+  <div class="card mt">
+    <div class="card-h"><div><h3>Matriks rekomendasi kebijakan</h3><div class="sub">Setiap rekomendasi dikaitkan dengan dasar empiris dan horizon waktu</div></div>
+      <div class="r"><a class="btn ghost" id="exportBtn2" href="#">Ekspor Excel</a></div></div>
+    <div class="rec-row rec-hd"><span></span><span>Rekomendasi</span><span>Dasar empiris</span><span>Nilai kunci</span><span>Horizon</span></div>
+    <div id="recRows"></div>
+  </div>
+  <div class="card mt">
+    <div class="card-h"><div><h3>Kinerja historis aturan kalibrasi TBP</h3><div class="sub">Breach bulanan, rata-rata gap, frekuensi perubahan, dan rekomendasi akhir horizon</div></div></div>
+    <div class="tbl-wrap"><table id="ruleTbl"></table></div>
+  </div>
+</section>
+
+<!-- ======================= 9. PROFILE ======================= -->
+<section class="view" id="v-profile">
+  <div id="pfBody"><div class="empty">Memuat profil…</div></div>
+</section>
+
+<div class="foot">
+  <span>TBP Lab · prototipe riset LPS Research Fair 2026 — bukan sistem resmi Lembaga Penjamin Simpanan. Logo LPS digunakan sebagai identitas tema riset.</span>
+  <span>© I Gusti Ngurah Sentana Putra</span>
+</div>
+</main>
+</div>
+<div class="toast" id="toast"><i>✓</i><span id="toastMsg"></span></div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
