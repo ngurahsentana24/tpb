@@ -1,0 +1,4 @@
+# Versi lengkap: LSTM PyTorch (CPU). Butuh RAM ± 1–2 GB dan waktu build lebih lama.
+-r requirements.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.2
