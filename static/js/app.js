@@ -57,6 +57,8 @@ async function getJSON(url, opt) {
 
 /* ---------- state ---------- */
 let SRC = 'paper', R = null, CFG = null, HEALTH = null;
+let LOCAL = null;            // mode serverless: {results, base_paths} hasil training disimpan di browser
+const SL = () => !!(HEALTH && HEALTH.serverless);
 const RENDER = {}, done = {};
 let CUR = 'overview';
 
@@ -92,7 +94,10 @@ document.querySelectorAll('.nav').forEach(b => b.onclick = () => go(b.dataset.vi
 
 async function loadResults(src) {
   try {
-    R = await getJSON(`${API.results}?source=${src}`);
+    if (src === 'run' && SL()) {
+      if (!LOCAL) throw new Error('Belum ada hasil training ulang di sesi browser ini.');
+      R = LOCAL.results;
+    } else R = await getJSON(`${API.results}?source=${src}`);
     SRC = src;
   } catch (e) {
     toast(e.message);
@@ -114,18 +119,29 @@ function decorate() {
   $('footTitle').textContent = paper ? 'Hasil paper' : 'Run aktif';
   $('lastRun').textContent = paper ? 'LPS Research Fair 2026' : (m.created || '–');
   $('lastRunSub').textContent = `Data s.d. ${m.data_end || '–'}${paper ? '' : ' · ' + (m.file || '')}`;
-  ['exportBtn', 'exportBtn2'].forEach(id => $(id).href = `${API.export}?source=${SRC}`);
+  ['exportBtn', 'exportBtn2'].forEach(id => {$(id).href = `${API.export}?source=${SRC}`; $(id).onclick = exportClick});
   $('srcNotice').innerHTML = paper
     ? `<div class="notice"><b>Mode Hasil Paper.</b>&nbsp;Angka berasal dari paper & lampiran (hasil olahan penulis) dan tidak dihitung ulang di server. Grafik deret historis ditampilkan sebagai gambar paper.</div>`
     : `<div class="notice g"><b>Mode Training Ulang.</b>&nbsp;Hasil dihitung ulang dari <b>${esc(m.file || 'data unggahan')}</b> (${m.data_start} s.d. ${m.data_end}, ${m.n_days} hari) dengan konfigurasi ringan — dapat berbeda dari paper.</div>`;
 }
 
+async function exportClick(ev) {
+  if (!(SRC === 'run' && SL() && LOCAL)) return;          // GET biasa untuk mode paper / server persisten
+  ev.preventDefault();
+  try {
+    const r = await fetch(API.export, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(LOCAL.results)});
+    if (!r.ok) throw new Error('Ekspor gagal');
+    const url = URL.createObjectURL(await r.blob()), a = document.createElement('a');
+    a.href = url; a.download = `hasil_run_${LOCAL.results.meta.run_id || 'lokal'}.xlsx`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } catch (e) {toast(e.message)}
+}
+
 async function refreshHealth() {
   try {HEALTH = await getJSON(API.health)} catch (e) {HEALTH = {}}
-  const has = !!HEALTH.active_run;
+  const has = SL() ? !!LOCAL : !!HEALTH.active_run;
   $('srcRun').disabled = !has;
   $('srcRun').title = has ? '' : 'Belum ada hasil training ulang';
-  $('ovRunTxt') && ($('ovRunTxt').textContent = has ? `Run aktif: ${HEALTH.active_run}` : 'Unggah data harian baru → pipeline yang sama dijalankan di server (versi ringan).');
+  $('ovRunTxt') && ($('ovRunTxt').textContent = has ? `Run aktif: ${SL() ? LOCAL.results.meta.run_id : HEALTH.active_run}` : 'Unggah data harian baru → pipeline yang sama dijalankan di server (versi ringan).');
   $('ovRunStep') && $('ovRunStep').classList.toggle('done', has);
   $('tokField').style.display = HEALTH.token_required ? '' : 'none';
   $('dropSub').textContent = `Excel/CSV · maks. ${HEALTH.max_upload_mb || 20} MB`;
@@ -215,8 +231,10 @@ function logLine(t, ts) {const l = $('log'); ts = ts || new Date().toLocaleTimeS
 function checks(list) {$('checks').innerHTML = list.map(c => `<div class="check ${c[0]}"><i>${c[0] === 'ok' ? '✓' : c[0] === 'warn' ? '!' : '·'}</i>${esc(c[1])}</div>`).join('')}
 function tokenHdr() {const t = $('cfTok').value; return t ? {'X-Retrain-Token': t} : {}}
 
+let FILE = null;
 async function handleFile(file) {
   if (!file) return;
+  FILE = file;
   $('fileBox').innerHTML = `<div class="file-row"><div class="fi">${esc(file.name.split('.').pop().toUpperCase())}</div><div><b>${esc(file.name)}</b><div class="muted" style="font-size:12px">${(file.size / 1024).toFixed(0)} KB · memvalidasi…</div></div></div>`;
   const fd = new FormData(); fd.append('file', file);
   try {
@@ -239,11 +257,33 @@ function cfg() {
 async function runPipeline() {
   if (!UPLOAD) return toast('Unggah data terlebih dahulu');
   $('runBtn').disabled = true;
+  if (SL()) return runSync();
   try {
     const j = await getJSON(API.run, {method: 'POST', headers: {'Content-Type': 'application/json', ...tokenHdr()}, body: JSON.stringify({upload_id: UPLOAD.upload_id, config: cfg()})});
     JOB = j.job_id; LOGN = 0; $('log').innerHTML = '<span class="t">$</span> training ulang dimulai…';
     drawSteps(0); poll();
   } catch (e) {toast(e.message); $('runBtn').disabled = false}
+}
+async function runSync() {
+  const fd = new FormData(); fd.append('file', FILE); fd.append('config', JSON.stringify(cfg()));
+  $('log').innerHTML = '<span class="t">$</span> training ulang (mode serverless, satu request)…';
+  const caps = HEALTH.serverless_caps || {};
+  logLine(`Konfigurasi dibatasi agar selesai dalam batas waktu fungsi: ≤ ${caps.n_folds} fold, ≤ ${caps.epochs} epoch, 1 seed, MLP, EMD.`);
+  let k = 0; drawSteps(0); $('pipeSub').textContent = 'Berjalan di server…';
+  const tick = setInterval(() => {k = Math.min(k + 1, 95); $('pipeBar').style.width = k + '%'; $('pipePct').textContent = k + '%';
+    drawSteps(Math.min(Math.floor(k / 11), CFG.steps.length - 1))}, 900);
+  try {
+    const j = await getJSON(API.run, {method: 'POST', body: fd, headers: tokenHdr()});
+    clearInterval(tick);
+    j.log.forEach(([ts, t]) => logLine(t, ts));
+    LOCAL = {results: j.results, base_paths: j.base_paths};
+    $('pipeBar').style.width = '100%'; $('pipePct').textContent = '100%'; $('pipeSub').textContent = 'Selesai'; drawSteps(0, true);
+    toast('Training ulang selesai — menampilkan hasil baru');
+    await refreshHealth(); drawRuns(); loadResults('run');
+  } catch (e) {
+    clearInterval(tick); $('pipeSub').textContent = 'Gagal'; logLine('ERROR: ' + e.message);
+    toast(/504|timeout|tidak valid/i.test(e.message) ? 'Server kehabisan waktu — kurangi fold/epoch atau deploy di Render/Railway' : e.message);
+  } finally {$('runBtn').disabled = false}
 }
 async function poll() {
   if (!JOB) return;
@@ -260,6 +300,11 @@ async function poll() {
   await refreshHealth(); await drawRuns(); loadResults('run');
 }
 async function drawRuns() {
+  if (SL()) {
+    $('runsBox').innerHTML = LOCAL ? `<div class="runs-row"><div class="grow"><b class="mono">${esc(LOCAL.results.meta.run_id)}</b><div class="muted">${esc(LOCAL.results.meta.file || '')} · data s.d. ${LOCAL.results.meta.data_end}</div></div><span class="tag">Aktif</span></div>` : '';
+    $('runsBox').innerHTML += '<div class="notice" style="margin:10px 0 0">Server berjalan serverless (mis. Vercel): hasil training disimpan di tab browser ini saja dan hilang saat halaman dimuat ulang. Unduh Excel untuk menyimpannya.</div>';
+    return;
+  }
   let j; try {j = await getJSON(API.runs)} catch (e) {return}
   if (!j.runs.length) {$('runsBox').innerHTML = '<div class="empty">Belum ada run.</div>'; return}
   $('runsBox').innerHTML = j.runs.map(r => `<div class="runs-row"><div class="grow"><b class="mono">${esc(r.id)}</b><div class="muted">${esc(r.file || '')} · data s.d. ${r.data_end} · ${esc(r.spec || '')} · ${esc(r.engine || '')}</div></div>
@@ -273,6 +318,8 @@ async function drawRuns() {
 RENDER.data = () => {
   const d = CFG ? CFG.defaults : {};
   if (d.n_folds) {$('cfFolds').value = d.n_folds; $('cfWin').value = d.window; $('cfEp').value = d.epochs; $('cfSeeds').value = d.n_seeds; $('cfB').value = d.B}
+  if (SL()) {const c = HEALTH.serverless_caps; $('cfFolds').value = c.n_folds; $('cfFolds').max = c.n_folds; $('cfEp').value = c.epochs; $('cfEp').max = c.epochs;
+    $('cfSeeds').value = 1; $('cfSeeds').max = 1; $('cfB').value = c.B; $('cfB').max = c.B; $('cfEng').value = 'mlp'; $('cfDec').value = 'emd'; $('cfDec').disabled = true}
   if (CFG && CFG.engine === 'mlp') $('cfEng').querySelector('[value=lstm]').textContent = 'LSTM (PyTorch tidak terpasang → MLP)';
   drawSteps(); drawRuns();
   const drop = $('drop'), inp = $('fileIn');
@@ -457,7 +504,8 @@ async function doSim() {
   let o;
   try {
     o = await getJSON(API.simulate, {method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({source: SRC, shock: S.shock, rule: S.rule, adj: S.adj, lag: S.lag, transmission: S.tr, tol: S.tol, B: S.B, stochastic: S.stoch, heat: true})});
+      body: JSON.stringify({source: SRC === 'run' && SL() ? 'inline' : SRC, context: SRC === 'run' && SL() ? R.simulation.context : undefined,
+        base_paths: SRC === 'run' && SL() ? LOCAL.base_paths : undefined, shock: S.shock, rule: S.rule, adj: S.adj, lag: S.lag, transmission: S.tr, tol: S.tol, B: S.B, stochastic: S.stoch, heat: true})});
   } catch (e) {return toast(e.message)}
   if (seq !== simSeq) return;
   const tol = S.tol / 100, H = o.months.length;
