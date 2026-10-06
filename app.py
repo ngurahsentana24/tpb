@@ -55,9 +55,14 @@ def _source():
 
 
 # ------------------------------------------------------------------------------------------- halaman
+ASSET_VERSION = os.environ.get('VERCEL_GIT_COMMIT_SHA', '')[:8] or str(int(os.path.getmtime(os.path.join(ROOT, 'static', 'js', 'app.js'))))
+
+
 @app.get('/')
 def index():
-    return render_template('index.html')
+    r = app.make_response(render_template('index.html', v=ASSET_VERSION))
+    r.headers['Cache-Control'] = 'no-cache'
+    return r
 
 
 @app.get('/favicon.ico')
@@ -180,19 +185,29 @@ def run():
 def _run_sync():
     """Serverless: file dikirim ulang bersama konfigurasi, training sinkron, hasil dikembalikan ke browser."""
     f = request.files.get('file')
-    if not f or not f.filename:
-        return _err('Pada mode serverless file harus dikirim bersama perintah training. Pilih file lagi.')
-    ext = os.path.splitext(secure_filename(f.filename) or 'data.csv')[1].lower()
-    if ext not in ALLOWED:
-        return _err('Format harus .xlsx, .xls, atau .csv')
+    if f and f.filename:
+        ext = os.path.splitext(secure_filename(f.filename) or 'data.csv')[1].lower()
+        if ext not in ALLOWED:
+            return _err('Format harus .xlsx, .xls, atau .csv')
+        try:
+            raw = json.loads(request.form.get('config', '{}'))
+        except ValueError:
+            raw = {}
+        name = f.filename
+        path = os.path.join(store.UPLOAD_DIR, f'{uuid.uuid4().hex[:12]}{ext}')
+        f.save(path)
+    else:
+        # kompatibel dengan frontend lama (JSON {upload_id}): pakai file di /tmp bila masih ada di instance ini
+        body = request.get_json(silent=True) or {}
+        raw = body.get('config', {}) or {}
+        uid = secure_filename(str(body.get('upload_id', '')))
+        path = os.path.join(store.UPLOAD_DIR, uid)
+        if not uid or not os.path.exists(path):
+            return _err('File unggahan tidak ditemukan di server (serverless). Muat ulang halaman (Ctrl+F5), '
+                        'pilih file lagi, lalu jalankan training.')
+        name = body.get('name') or uid
     try:
-        raw = json.loads(request.form.get('config', '{}'))
-    except ValueError:
-        raw = {}
-    path = os.path.join(store.UPLOAD_DIR, f'{uuid.uuid4().hex[:12]}{ext}')
-    f.save(path)
-    try:
-        R, base, logs = store.run_sync(path, _clean_cfg(raw), f.filename)
+        R, base, logs = store.run_sync(path, _clean_cfg(raw), name)
     except Exception as e:  # noqa
         return _err(f'Training gagal: {e}', 500)
     finally:
