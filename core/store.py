@@ -2,6 +2,7 @@
 import json
 import os
 import shutil
+import tempfile
 import threading
 import time
 import uuid
@@ -11,12 +12,22 @@ from .pipeline import run_pipeline, STEPS
 from .simulation import Simulator
 
 BASE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
-PAPER_DIR = os.path.join(BASE, 'paper')
-RUNS_DIR = os.path.join(BASE, 'runs')
-UPLOAD_DIR = os.path.join(BASE, 'uploads')
+PAPER_DIR = os.path.join(BASE, 'paper')                     # read-only, ikut di repo
+
+# Serverless (Vercel, AWS Lambda, dsb.): sistem berkas aplikasi read-only, hanya /tmp yang bisa ditulis,
+# dan proses tidak boleh menjalankan thread latar belakang setelah respons dikirim.
+SERVERLESS = bool(os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
+                  or os.environ.get('SERVERLESS', '').lower() in ('1', 'true', 'yes')
+                  or not os.access(BASE, os.W_OK))          # folder aplikasi read-only → perlakukan sebagai serverless
+WRITE_BASE = os.environ.get('DATA_DIR') or (os.path.join(tempfile.gettempdir(), 'tbp-lab') if SERVERLESS else BASE)
+RUNS_DIR = os.path.join(WRITE_BASE, 'runs')
+UPLOAD_DIR = os.path.join(WRITE_BASE, 'uploads')
 ACTIVE = os.path.join(RUNS_DIR, 'active.txt')
 for d in (RUNS_DIR, UPLOAD_DIR):
-    os.makedirs(d, exist_ok=True)
+    try:
+        os.makedirs(d, exist_ok=True)
+    except OSError:  # pragma: no cover
+        pass
 
 _cache = {}
 _lock = threading.Lock()
@@ -30,7 +41,7 @@ def _dir(source):
 
 
 def active_run():
-    if os.path.exists(ACTIVE):
+    if os.path.exists(ACTIVE) and os.path.isdir(RUNS_DIR):
         rid = open(ACTIVE).read().strip()
         if rid and os.path.exists(os.path.join(RUNS_DIR, rid, 'results.json')):
             return rid
@@ -44,6 +55,8 @@ def set_active(rid):
 
 def list_runs():
     out = []
+    if not os.path.isdir(RUNS_DIR):
+        return out
     for rid in sorted(os.listdir(RUNS_DIR), reverse=True):
         p = os.path.join(RUNS_DIR, rid, 'results.json')
         if os.path.exists(p):
@@ -70,6 +83,30 @@ def results(source='paper'):
     if key not in _cache:
         _cache[key] = json.load(open(p))
     return _cache[key]
+
+
+def simulator_inline(context, base_paths):
+    ctx = dict(context)
+    ctx['base_paths'] = np.asarray(base_paths, float)
+    return Simulator(ctx)
+
+
+def run_sync(upload_path, cfg, original_name=''):
+    """Training ulang sinkron (mode serverless): hasil dikembalikan langsung ke klien."""
+    rid = time.strftime('%Y%m%d-%H%M%S') + '-' + uuid.uuid4().hex[:4]
+    out = os.path.join(RUNS_DIR, rid)
+    logs = []
+    log = lambda m: logs.append([time.strftime('%H:%M:%S'), m])
+    try:
+        run_pipeline(upload_path, out, cfg, log, lambda s, p: None)
+        R = json.load(open(os.path.join(out, 'results.json')))
+        R['meta']['run_id'] = rid
+        R['meta']['file'] = original_name
+        R['meta']['serverless'] = True
+        base = np.load(os.path.join(out, 'base_paths.npy'))
+        return R, np.round(base, 5).tolist(), logs
+    finally:
+        shutil.rmtree(out, ignore_errors=True)
 
 
 def simulator(source='paper'):
