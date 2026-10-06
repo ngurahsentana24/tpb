@@ -23,7 +23,7 @@ from core.pipeline import DEFAULTS, STEPS
 ROOT = os.path.dirname(os.path.abspath(__file__))
 ALLOWED = {'.xlsx', '.xls', '.csv'}
 TOKEN = os.environ.get('RETRAIN_TOKEN', '').strip()          # opsional: kunci fitur training ulang
-MAX_MB = int(os.environ.get('MAX_UPLOAD_MB', '20'))
+MAX_MB = int(os.environ.get('MAX_UPLOAD_MB', '4' if store.SERVERLESS else '20'))   # Vercel: batas body 4,5 MB
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config['MAX_CONTENT_LENGTH'] = MAX_MB * 1024 * 1024
@@ -33,6 +33,10 @@ app.json.ensure_ascii = False
 LIMITS = dict(n_folds=(1, 8), window=(126, 504), K=(3, 8), trials=(5, 50), lookback=(3, 21), units=(8, 64),
               epochs=(5, 150), n_seeds=(1, 5), B=(200, 2000), n_train=(250, 1500))
 CHOICES = dict(spec=('level', 'gap', 'spread'), engine=('auto', 'lstm', 'mlp'), decomp_causal=('emd', 'ceemdan'))
+# Mode serverless (mis. Vercel): training dijalankan sinkron dalam satu request, jadi dibatasi agar selesai
+# sebelum batas durasi fungsi. Ubah lewat env SERVERLESS_MAX_FOLDS dsb. bila paket hosting mengizinkan.
+SERVERLESS_CAPS = dict(n_folds=int(os.environ.get('SERVERLESS_MAX_FOLDS', 2)), epochs=int(os.environ.get('SERVERLESS_MAX_EPOCHS', 20)),
+                       n_seeds=1, B=int(os.environ.get('SERVERLESS_MAX_B', 500)), trials=10)
 
 
 def _err(msg, code=400):
@@ -65,13 +69,14 @@ def favicon():
 @app.get('/api/health')
 def health():
     return jsonify(ok=True, engine=engine_name('auto'), paper=store.results('paper') is not None,
-                   active_run=store.active_run(), token_required=bool(TOKEN), max_upload_mb=MAX_MB)
+                   active_run=None if store.SERVERLESS else store.active_run(), token_required=bool(TOKEN),
+                   max_upload_mb=MAX_MB, serverless=store.SERVERLESS, serverless_caps=SERVERLESS_CAPS)
 
 
 @app.get('/api/config')
 def config():
     return jsonify(defaults=DEFAULTS, limits=LIMITS, choices=CHOICES, steps=STEPS, engine=engine_name('auto'),
-                   token_required=bool(TOKEN))
+                   token_required=bool(TOKEN), serverless=store.SERVERLESS, serverless_caps=SERVERLESS_CAPS)
 
 
 @app.get('/api/results')
@@ -121,8 +126,11 @@ def upload():
         os.remove(path)
         return _err(f'Data tidak dapat dibaca: {e}')
     a = D['aligned']
-    with open(path + '.json', 'w') as fh:
-        json.dump({'name': f.filename}, fh)
+    try:
+        with open(path + '.json', 'w') as fh:
+            json.dump({'name': f.filename}, fh)
+    except OSError:
+        pass
     return jsonify(ok=True, upload_id=uid + ext, name=f.filename, rows=int(len(a)),
                    period=[a.index[0].strftime('%Y-%m-%d'), a.index[-1].strftime('%Y-%m-%d')],
                    checks=checks, preview=preview(D, 10))
@@ -141,6 +149,11 @@ def _clean_cfg(raw):
             cfg[k] = raw[k]
     if 'holdout' in raw:
         cfg['holdout'] = bool(raw['holdout'])
+    if store.SERVERLESS:
+        for k, cap in SERVERLESS_CAPS.items():
+            cfg[k] = min(cfg.get(k, DEFAULTS.get(k, cap)), cap)
+        cfg['engine'] = 'mlp' if engine_name(cfg.get('engine', 'auto')) != 'lstm' else cfg.get('engine', 'auto')
+        cfg['decomp_causal'] = 'emd'
     return cfg
 
 
@@ -148,6 +161,8 @@ def _clean_cfg(raw):
 def run():
     if not _authorised():
         return _err('Token training ulang tidak valid.', 403)
+    if store.SERVERLESS:
+        return _run_sync()
     body = request.get_json(silent=True) or {}
     uid = secure_filename(str(body.get('upload_id', '')))
     path = os.path.join(store.UPLOAD_DIR, uid)
@@ -160,6 +175,32 @@ def run():
         name = json.load(open(path + '.json')).get('name', '')
     job = store.start_job(path, _clean_cfg(body.get('config', {})), name)
     return jsonify(ok=True, job_id=job['id'], run_id=job['run_id'], steps=STEPS)
+
+
+def _run_sync():
+    """Serverless: file dikirim ulang bersama konfigurasi, training sinkron, hasil dikembalikan ke browser."""
+    f = request.files.get('file')
+    if not f or not f.filename:
+        return _err('Pada mode serverless file harus dikirim bersama perintah training. Pilih file lagi.')
+    ext = os.path.splitext(secure_filename(f.filename) or 'data.csv')[1].lower()
+    if ext not in ALLOWED:
+        return _err('Format harus .xlsx, .xls, atau .csv')
+    try:
+        raw = json.loads(request.form.get('config', '{}'))
+    except ValueError:
+        raw = {}
+    path = os.path.join(store.UPLOAD_DIR, f'{uuid.uuid4().hex[:12]}{ext}')
+    f.save(path)
+    try:
+        R, base, logs = store.run_sync(path, _clean_cfg(raw), f.filename)
+    except Exception as e:  # noqa
+        return _err(f'Training gagal: {e}', 500)
+    finally:
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+    return jsonify(ok=True, sync=True, results=R, base_paths=base, log=logs)
 
 
 @app.get('/api/pipeline/status/<jid>')
@@ -199,7 +240,10 @@ def delete(rid):
 def simulate():
     b = request.get_json(silent=True) or {}
     src = b.get('source', 'paper')
-    sim = store.simulator(src if src in ('paper', 'run') else 'paper')
+    if src == 'inline' and b.get('context') and b.get('base_paths'):
+        sim = store.simulator_inline(b['context'], b['base_paths'])
+    else:
+        sim = store.simulator(src if src in ('paper', 'run') else 'paper')
     if sim is None:
         return _err('Belum ada hasil untuk sumber ini.', 404)
     try:
@@ -213,13 +257,8 @@ def simulate():
 
 
 # ------------------------------------------------------------------------------------------- ekspor
-@app.get('/api/export.xlsx')
-def export():
+def _xlsx(R):
     import pandas as pd
-    src = _source()
-    R = store.results(src)
-    if R is None:
-        abort(404)
     buf = io.BytesIO()
     ev = R['evaluation']
     with pd.ExcelWriter(buf, engine='openpyxl') as xw:
@@ -241,14 +280,45 @@ def export():
         pd.DataFrame(R['recommendations']['rows'],
                      columns=['Rekomendasi', 'Dasar empiris', 'Nilai kunci', 'Horizon']).to_excel(xw, sheet_name='Rekomendasi', index=False)
     buf.seek(0)
+    return buf
+
+
+XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+
+@app.get('/api/export.xlsx')
+def export():
+    src = _source()
+    R = store.results(src)
+    if R is None:
+        abort(404)
     name = 'hasil_paper_TBP_LPS.xlsx' if src == 'paper' else f'hasil_run_{R["meta"].get("run_id", "aktif")}.xlsx'
-    return send_file(buf, as_attachment=True, download_name=name,
-                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    return send_file(_xlsx(R), as_attachment=True, download_name=name, mimetype=XLSX)
+
+
+@app.post('/api/export.xlsx')
+def export_inline():
+    R = request.get_json(silent=True)
+    if not R or 'evaluation' not in R:
+        return _err('Hasil tidak valid.')
+    return send_file(_xlsx(R), as_attachment=True, download_name=f'hasil_run_{R["meta"].get("run_id", "lokal")}.xlsx',
+                     mimetype=XLSX)
 
 
 @app.errorhandler(413)
 def too_large(_):
     return _err(f'File melebihi {MAX_MB} MB.', 413)
+
+
+@app.errorhandler(Exception)
+def unhandled(e):
+    from werkzeug.exceptions import HTTPException
+    if isinstance(e, HTTPException):
+        if request.path.startswith('/api/'):
+            return _err(e.description or e.name, e.code)
+        return e
+    app.logger.exception('Kesalahan tak tertangani')
+    return _err(f'Kesalahan server: {type(e).__name__}: {e}', 500)
 
 
 if __name__ == '__main__':
