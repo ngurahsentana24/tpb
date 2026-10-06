@@ -259,12 +259,13 @@ async function runPipeline() {
   $('runBtn').disabled = true;
   if (SL()) return runSync();
   try {
-    const j = await getJSON(API.run, {method: 'POST', headers: {'Content-Type': 'application/json', ...tokenHdr()}, body: JSON.stringify({upload_id: UPLOAD.upload_id, config: cfg()})});
+    const j = await getJSON(API.run, {method: 'POST', headers: {'Content-Type': 'application/json', ...tokenHdr()}, body: JSON.stringify({upload_id: UPLOAD.upload_id, name: UPLOAD.name, config: cfg()})});
     JOB = j.job_id; LOGN = 0; $('log').innerHTML = '<span class="t">$</span> training ulang dimulai…';
     drawSteps(0); poll();
   } catch (e) {toast(e.message); $('runBtn').disabled = false}
 }
 async function runSync() {
+  if (!FILE) {toast('Pilih file data terlebih dahulu'); $('runBtn').disabled = false; return}
   const fd = new FormData(); fd.append('file', FILE); fd.append('config', JSON.stringify(cfg()));
   $('log').innerHTML = '<span class="t">$</span> training ulang (mode serverless, satu request)…';
   const caps = HEALTH.serverless_caps || {};
