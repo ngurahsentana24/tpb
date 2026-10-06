@@ -260,3 +260,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 label.drop{display:block}
 a.btn{text-decoration:none}
 .notice{display:block}
+/* teks di kartu hijau (kelas .kpi berada di elemen yang sama dengan .card) */
+.card.green .lab,.card.green.kpi .lab{color:#CFE6DD}
+.card.green .val small,.card.green.kpi .val small{color:#BFE0D4}
+.card.green .muted{color:#BFE0D4}
+.card.green .ico{color:var(--y500)}
